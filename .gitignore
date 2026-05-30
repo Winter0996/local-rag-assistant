@@ -1,0 +1,15 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+chroma_db/
+uploads/
+
+# Node
+node_modules/
+dist/
+.env.local
+
+# Cursor
+.cursor/
