@@ -17,3 +17,12 @@ def delete_document(doc_id: str):
     results = collection.get(where={"doc_id": doc_id})
     if results["ids"]:
         collection.delete(ids=results["ids"])
+
+def list_documents() -> list[dict]:
+    results = collection.get()
+    seen = {}
+    for metadata in results["metadatas"]:
+        doc_id = metadata["doc_id"]
+        if doc_id not in seen:
+            seen[doc_id] = {"doc_id": doc_id, "filename": metadata["filename"]}
+    return list(seen.values())

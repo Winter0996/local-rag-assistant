@@ -10,3 +10,9 @@ export const uploadDocument = (file: File) => {
 
 export const askQuestion = (question: string) => 
     API.post("/api/query", { question });
+
+export const getDocuments = () => 
+    API.get("/api/documents");
+
+export const deleteDocument = (doc_id: string) => 
+    API.delete(`/api/documents/${doc_id}`);
