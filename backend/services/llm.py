@@ -2,13 +2,23 @@ import requests
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
-def generate_answer(question: str, context_chunks: list[str], model: str = "llama3") -> str:
+def generate_answer(question: str, context_chunks: list[str], history: list[dict] | None = None, model: str = "llama3") -> str:
     context = "\n\n---\n\n".join(context_chunks)
+
+    history_text = ""
+    if history:
+        for turn in history[-6:]:  # last 3 exchanges (6 messages)
+            role = "User" if turn["role"] == "user" else "Assistant"
+            history_text += f"{role}: {turn['content']}\n"
+
     prompt = f"""You are a helpful assistant. Answer the question using ONLY the context below.
 If the answer is not in the context, say "I couldn't find that in the uploaded documents."
 
 Context:
 {context}
+
+{f"Previous conversation:\n{history_text}" if history_text else ""}
+
 
 Question: {question}
 

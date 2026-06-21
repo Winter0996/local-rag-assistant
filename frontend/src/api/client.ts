@@ -8,8 +8,8 @@ export const uploadDocument = (file: File) => {
     return API.post("/api/upload", form);
 };
 
-export const askQuestion = (question: string) => 
-    API.post("/api/query", { question });
+export const askQuestion = (question: string, docIds?: string[], history?: {role: string; content: string}[]) => 
+    API.post("/api/query", { question, doc_ids: docIds, history });
 
 export const getDocuments = () => 
     API.get("/api/documents");

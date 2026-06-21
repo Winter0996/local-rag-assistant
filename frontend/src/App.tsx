@@ -5,6 +5,7 @@ import DocumentList from "./components/DocumentList";
 
 export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -14,10 +15,13 @@ export default function App() {
       </header>
       <div className="p-4 border-b space-y-3">
         <FileUpload onUploadSuccess={() => setRefreshTrigger(prev => prev + 1)} />
-        <DocumentList refreshTrigger={refreshTrigger} />
+        <DocumentList 
+        refreshTrigger={refreshTrigger} 
+        selectedDocIds={selectedDocIds} onSelectionChange={setSelectedDocIds} 
+        />
       </div>
       <div className="flex-1 overflow-hidden">
-        <ChatWindow />
+        <ChatWindow selectedDocIds={selectedDocIds} />
       </div>
     </div>
   );

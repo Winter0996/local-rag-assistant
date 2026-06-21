@@ -10,9 +10,14 @@ def add_document(doc_id: str, chunks: list[str], embeddings: list, filename: str
                  for i, _ in enumerate(chunks)]
     collection.add(documents=chunks, embeddings=embeddings, ids=ids, metadatas=metadatas)
 
-def query_similar(query_embedding: list, n_results: int = 5) -> dict:
-    return collection.query(query_embeddings=[query_embedding], n_results=n_results)
-
+def query_similar(query_embedding: list, n_results: int = 5, doc_ids: list[str] | None = None) -> dict:
+    where_filter = {"doc_id": {"$in": doc_ids}} if doc_ids else None
+    return collection.query(
+        query_embeddings=[query_embedding],
+        n_results=n_results,
+        where=where_filter
+    )
+    
 def delete_document(doc_id: str):
     results = collection.get(where={"doc_id": doc_id})
     if results["ids"]:

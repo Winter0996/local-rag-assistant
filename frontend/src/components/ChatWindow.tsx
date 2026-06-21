@@ -15,19 +15,33 @@ interface Message {
   context?: string[];
 }
 
-export default function ChatWindow() {
+interface Props {
+  selectedDocIds: string[];
+
+}
+
+export default function ChatWindow({ selectedDocIds }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+
   const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg: Message = { role: "user", content: input };
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInput("");
     setLoading(true);
 
-    const res = await askQuestion(input);
+    const history = updatedMessages.map(m => ({ role: m.role, content: m.content }));
+
+    const res = await askQuestion(
+      input,
+      selectedDocIds.length > 0 ? selectedDocIds : undefined,
+      history
+    );
+
     const botMsg: Message = {
       role: "assistant",
       content: res.data.answer,
@@ -38,8 +52,22 @@ export default function ChatWindow() {
     setLoading(false);
   };
 
+  const handleClearChat = () => {
+    setMessages([]);
+  };
+
   return (
     <div className="flex flex-col h-full">
+       <div className="flex items-center justify-between px-4 pt-2">
+        {messages.length > 0 && (
+          <button
+            onClick={handleClearChat}
+            className="text-xs text-gray-500 hover:text-gray-700 ml-auto"
+          >
+            Clear conversation
+          </button>
+        )}
+      </div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
