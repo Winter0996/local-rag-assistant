@@ -1,5 +1,6 @@
 import requests
 
+
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
 def generate_answer(question: str, context_chunks: list[str], history: list[dict] | None = None, model: str = "llama3") -> str:
@@ -30,3 +31,39 @@ Answer:"""
         "stream": False
     })
     return response.json()["response"]
+
+
+def stream_answer(question: str, context_chunks: list[str], history: list[dict] | None = None, model: str = "llama3"):
+    context = "\n\n---\n\n".join(context_chunks)
+
+    history_text = ""
+    if history:
+        for turn in history[-6:]:
+            role = "User" if turn["role"] == "user" else "Assistant"
+            history_text += f"{role}: {turn['content']}\n"
+
+    prompt = f"""You are a helpful assistant. Answer the question using ONLY the context below.
+If the answer is not in the context, say "I couldn't find that in the uploaded documents."
+
+Context:
+{context}
+
+{f"Previous conversation:\n{history_text}" if history_text else ""}
+
+Question: {question}
+
+Answer: """
+
+    response = requests.post(OLLAMA_URL, json={
+        "model": model,
+        "prompt": prompt,
+        "stream": True
+    }, stream=True)
+
+    for line in response.iter_lines():
+        if line:
+            import json
+            data = json.loads(line)
+            token = data.get("response", "")
+            done = data.get("done", False)
+            yield token, done

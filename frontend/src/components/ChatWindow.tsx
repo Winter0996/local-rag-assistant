@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { askQuestion } from "../api/client";
+import { streamQuestion } from "../api/client";
 import ReactMarkdown from "react-markdown";
 import SourceCitation from "./SourceCitation";
 
@@ -17,7 +17,6 @@ interface Message {
 
 interface Props {
   selectedDocIds: string[];
-
 }
 
 export default function ChatWindow({ selectedDocIds }: Props) {
@@ -25,9 +24,9 @@ export default function ChatWindow({ selectedDocIds }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
+
     const userMsg: Message = { role: "user", content: input };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
@@ -36,20 +35,39 @@ export default function ChatWindow({ selectedDocIds }: Props) {
 
     const history = updatedMessages.map(m => ({ role: m.role, content: m.content }));
 
-    const res = await askQuestion(
+    
+    const botMsg: Message = { role: "assistant", content: "", sources: [], context: [] };
+    setMessages(prev => [...prev, botMsg]);
+
+    await streamQuestion(
       input,
       selectedDocIds.length > 0 ? selectedDocIds : undefined,
-      history
+      history,
+      (token) => {
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: updated[updated.length - 1].content + token,
+          };
+          return updated;
+        });
+      },
+      (sources, context) => {
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            sources,
+            context,
+          };
+          return updated;
+        });
+      },
+      () => {
+        setLoading(false);
+      }
     );
-
-    const botMsg: Message = {
-      role: "assistant",
-      content: res.data.answer,
-      sources: res.data.sources,
-      context: res.data.context,
-    };
-    setMessages(prev => [...prev, botMsg]);
-    setLoading(false);
   };
 
   const handleClearChat = () => {
@@ -58,7 +76,7 @@ export default function ChatWindow({ selectedDocIds }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-       <div className="flex items-center justify-between px-4 pt-2">
+      <div className="flex items-center justify-between px-4 pt-2">
         {messages.length > 0 && (
           <button
             onClick={handleClearChat}
@@ -73,13 +91,15 @@ export default function ChatWindow({ selectedDocIds }: Props) {
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-2xl p-3 rounded-lg ${msg.role === "user" ? "bg-blue-600 text-white" : "bg-gray-100"}`}>
               <ReactMarkdown>{msg.content}</ReactMarkdown>
-              {msg.sources && msg.context && (
+              {msg.content && msg.sources && msg.sources.length > 0 && msg.context && (
                 <SourceCitation sources={msg.sources} context={msg.context} />
               )}
             </div>
           </div>
         ))}
-        {loading && <div className="text-gray-400 text-sm">Thinking...</div>}
+        {loading && messages[messages.length - 1]?.content === "" && (
+          <div className="text-gray-400 text-sm">Thinking...</div>
+        )}
       </div>
       <div className="flex gap-2 p-4 border-t">
         <input
@@ -91,7 +111,8 @@ export default function ChatWindow({ selectedDocIds }: Props) {
         />
         <button
           onClick={handleSend}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
         >
           Send
         </button>

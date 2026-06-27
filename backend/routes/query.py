@@ -1,7 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 from services.embedder import embed_texts
 from services.vector_store import query_similar
-from services.llm import generate_answer
+from services.llm import generate_answer, stream_answer
+import json
 
 query_bp = Blueprint("query", __name__)
 
@@ -24,3 +25,31 @@ def query():
     sources = [{"filename": m["filename"], "chunk_index": m["chunk_index"]} for m in metadatas]
 
     return jsonify({"answer": answer, "sources": sources, "context": chunks})
+
+@query_bp.route("/api/query/stream", methods=["POST"])
+def query_stream():
+    data = request.json
+    question = data.get("question")
+    doc_ids = data.get("doc_ids")
+    history = data.get("history")
+
+    if not question:
+        return jsonify({"error": "No question provided"}), 400
+
+    query_embedding = embed_texts([question])[0]
+    results = query_similar(query_embedding, n_results=5, doc_ids=doc_ids)
+
+    chunks = results["documents"][0]
+    metadatas = results["metadatas"][0]
+    sources = [{"filename": m["filename"], "chunk_index": m["chunk_index"]} for m in metadatas]
+
+    def generate():
+        # First send sources and context
+        yield f"data: {json.dumps({'type': 'meta', 'sources': sources, 'context': chunks})}\n\n"
+        # Then stream tokens
+        for token, done in stream_answer(question, chunks, history=history):
+            yield f"data: {json.dumps({'type': 'token', 'token': token, 'done': done})}\n\n"
+            if done:
+                break
+
+    return Response(generate(), mimetype="text/event-stream")
