@@ -1,5 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { motion } from "framer-motion";
 import { useDropzone } from "react-dropzone";
+import { Upload } from "lucide-react";
 import { uploadDocument } from "../api/client";
 
 interface Props {
@@ -7,33 +9,74 @@ interface Props {
 }
 
 export default function FileUpload({ onUploadSuccess }: Props) {
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
-      try {
-        await uploadDocument(file);
-        onUploadSuccess(file.name);
-      } catch (err) {
-        console.error("Upload failed:", err);
-      }
-    }
-  }, [onUploadSuccess]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      setError(null);
+      setUploading(true);
+      for (const file of acceptedFiles) {
+        try {
+          await uploadDocument(file);
+          onUploadSuccess(file.name);
+        } catch (err) {
+          console.error("Upload failed:", err);
+          setError(`Failed to upload ${file.name}`);
+        }
+      }
+      setUploading(false);
+    },
+    [onUploadSuccess]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { "application/pdf": [], "text/plain": [], "text/markdown": [] }
+    accept: { "application/pdf": [], "text/plain": [], "text/markdown": [] },
+    disabled: uploading,
   });
 
   return (
-    <div
-    {...getRootProps()}
-    className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-      ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400"}`}
-  >
-    <input {...getInputProps()} />
-    <p className="text-gray-500">
-      {isDragActive ? "Drop your file here..." : "Drag & drop a PDF, TXT, or MD file, or click to browse"}
-    </p>
-  </div>
-);
+    <div>
+      <div {...getRootProps()}>
+        <motion.div
+          animate={{
+            scale: isDragActive ? 1.02 : 1,
+          }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors"
+          style={{
+            background: isDragActive ? "var(--surface-hover)" : "var(--surface)",
+            borderColor: isDragActive ? "var(--accent)" : "var(--border)",
+            backdropFilter: "blur(8px)",
+            boxShadow: isDragActive ? "0 0 24px rgba(193, 30, 56, 0.25)" : "none",
+          }}
+        >
+          <input {...getInputProps()} />
+          <motion.div
+            animate={{ y: isDragActive ? -2 : 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="flex flex-col items-center gap-2"
+          >
+            <Upload
+              size={24}
+              style={{ color: isDragActive ? "var(--accent)" : "var(--text-muted)" }}
+            />
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              {uploading
+                ? "Uploading..."
+                : isDragActive
+                  ? "Drop your file here..."
+                  : "Drag & drop a PDF, TXT, or MD file, or click to browse"}
+            </p>
+          </motion.div>
+        </motion.div>
+      </div>
+      {error && (
+        <p className="mt-2 text-xs" style={{ color: "var(--accent)" }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
 }

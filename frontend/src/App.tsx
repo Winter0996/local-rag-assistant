@@ -1,27 +1,33 @@
 import { useState } from "react";
-import FileUpload from "./components/FileUpload";
-import ChatWindow from "./components/ChatWindow";
-import DocumentList from "./components/DocumentList";
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import ChatWindow, { type Message } from "./components/ChatWindow";
 
 export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   return (
-    <div className="flex flex-col h-screen bg-white">
-      <header className="p-4 border-b bg-gray-50">
-        <h1 className="text-xl font-semibold text-gray-800">local-rag-assistant</h1>
-        <p className="text-sm text-gray-500">Upload documents and ask questions</p>
-      </header>
-      <div className="p-4 border-b space-y-3">
-        <FileUpload onUploadSuccess={() => setRefreshTrigger(prev => prev + 1)} />
-        <DocumentList 
-        refreshTrigger={refreshTrigger} 
-        selectedDocIds={selectedDocIds} onSelectionChange={setSelectedDocIds} 
+    <div className="flex flex-col h-full">
+      <Navbar
+        hasMessages={messages.length > 0}
+        onClearChat={() => setMessages([])}
+      />
+      <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+        <Sidebar
+          refreshTrigger={refreshTrigger}
+          selectedDocIds={selectedDocIds}
+          onSelectionChange={setSelectedDocIds}
+          onUploadSuccess={() => setRefreshTrigger(prev => prev + 1)}
         />
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <ChatWindow selectedDocIds={selectedDocIds} />
+        <main className="flex-1 min-h-0 min-w-0">
+          <ChatWindow
+            selectedDocIds={selectedDocIds}
+            messages={messages}
+            setMessages={setMessages}
+          />
+        </main>
       </div>
     </div>
   );

@@ -1,1 +1,63 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --gradient-start: #c11e38;
+  --gradient-end: #220b34;
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-hover: rgba(255, 255, 255, 0.12);
+  --card-user: rgba(193, 30, 56, 0.25);
+  --card-assistant: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.12);
+  --text: #f5f0f2;
+  --text-muted: rgba(245, 240, 242, 0.65);
+  --navbar-bg: rgba(34, 11, 52, 0.6);
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --accent: #e85a6f;
+}
+
+[data-theme="light"] {
+  --gradient-start: #d9445a;
+  --gradient-end: #fff5f7;
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-hover: rgba(255, 255, 255, 0.95);
+  --card-user: rgba(217, 68, 90, 0.15);
+  --card-assistant: rgba(255, 255, 255, 0.9);
+  --border: rgba(26, 10, 18, 0.1);
+  --text: #1a0a12;
+  --text-muted: rgba(74, 32, 48, 0.7);
+  --navbar-bg: rgba(255, 255, 255, 0.7);
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --accent: #c11e38;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+  background-attachment: fixed;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.streaming-cursor::after {
+  content: "▋";
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent);
+  animation: blink 1s step-end infinite;
+}
