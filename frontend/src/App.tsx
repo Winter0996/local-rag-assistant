@@ -2,6 +2,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import ChatWindow, { type Message } from "./components/ChatWindow";
+import Footer from "./components/Footer";
 
 export default function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -29,6 +30,7 @@ export default function App() {
           />
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

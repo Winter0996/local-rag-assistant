@@ -14,6 +14,7 @@ export interface Message {
   content: string;
   sources?: Source[];
   context?: string[];
+  isError?: boolean;
 }
 
 interface Props {
@@ -61,7 +62,19 @@ export default function ChatWindow({ selectedDocIds, messages, setMessages }: Pr
           return updated;
         });
       },
-      () => setLoading(false)
+      () => setLoading(false),
+      errorMessage => {
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: errorMessage,
+            isError: true,
+          };
+          return updated;
+        });
+        setLoading(false);
+      }
     );
   };
 
@@ -88,6 +101,7 @@ export default function ChatWindow({ selectedDocIds, messages, setMessages }: Pr
               sources={msg.sources}
               context={msg.context}
               isStreaming={isLastAssistant}
+              isError={msg.isError}
               theme={theme}
             />
           );

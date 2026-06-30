@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { motion } from "framer-motion";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, type FileRejection } from "react-dropzone";
 import { Upload } from "lucide-react";
 import { uploadDocument } from "../api/client";
 
@@ -13,8 +13,16 @@ export default function FileUpload({ onUploadSuccess }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(
-    async (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
       setError(null);
+
+      if (rejectedFiles.length > 0) {
+        const names = rejectedFiles.map(r => r.file.name).join(", ");
+        setError(`Unsupported file type: ${names}. Please upload a PDF, TXT, or MD file.`);
+      }
+
+      if (acceptedFiles.length === 0) return;
+
       setUploading(true);
       for (const file of acceptedFiles) {
         try {
@@ -73,9 +81,15 @@ export default function FileUpload({ onUploadSuccess }: Props) {
         </motion.div>
       </div>
       {error && (
-        <p className="mt-2 text-xs" style={{ color: "var(--accent)" }}>
+        <div
+          className="mt-2 rounded-lg px-3 py-2 text-xs"
+          style={{
+            background: "rgba(193, 30, 56, 0.12)",
+            color: "var(--text)",
+          }}
+        >
           {error}
-        </p>
+        </div>
       )}
     </div>
   );

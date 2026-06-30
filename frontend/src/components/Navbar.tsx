@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Moon, Sun, Trash2 } from "lucide-react";
+import { FileStack, Moon, Sun, Trash2 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import AboutPopover from "./AboutPopover";
 
@@ -30,26 +30,22 @@ export default function Navbar({ onClearChat, hasMessages }: Props) {
         backdropFilter: "blur(12px)",
       }}
     >
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight" style={{ color: "var(--text)" }}>
-          local-rag-assistant
-        </h1>
-        <p className="text-xs hidden sm:block" style={{ color: "var(--text-muted)" }}>
-          Upload documents and ask questions
-        </p>
+      <div className="flex items-center gap-2">
+        <FileStack size={24} style={{ color: "var(--text)" }} />
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight" style={{ color: "var(--text)" }}>
+            local-rag-assistant
+          </h1>
+          <p className="text-xs hidden sm:block" style={{ color: "var(--text-muted)" }}>
+            Upload documents and ask questions
+          </p>
+        </div>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
         <AboutPopover />
 
-        <a
-          href={GITHUB_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-[(--surface-hover)]"
-          style={{ color: "var(--text-muted)" }}
-          aria-label="View on GitHub"
-        >
+        <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-[(--surface-hover)]" style={{ color: "var(--text-muted)" }} aria-label="View on GitHub">
           <GitHubIcon size={16} />
           <span className="hidden sm:inline">GitHub</span>
         </a>
