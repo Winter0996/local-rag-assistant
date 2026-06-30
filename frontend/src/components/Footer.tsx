@@ -9,7 +9,7 @@ export default function Footer() {
         }}
       >
         <p style={{ color: "var(--text-muted)" }}>
-          © 2026 · Built with React, TypeScript, Tailwind CSS, ChromaDB, Vite · Coded in Cursor · Deployed on Vercel
+          © 2026 · Built with React, TypeScript, Tailwind CSS, ChromaDB, Vite · Coded in Cursor 
         </p>
         <p style={{ color: "var(--text-muted)" }}>
           Developed by Nathan Winter
