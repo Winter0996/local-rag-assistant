@@ -38,20 +38,10 @@ A fully local, privacy-first Retrieval-Augmented Generation (RAG) application th
 
 ## Architecture
 
-## Architecture
+**React UI (TypeScript)** ⇄ **Flask API (Python)** ⇄ **ChromaDB (vector DB)**
 
-```
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   React UI   │ ───▶ │  Flask API   │ ───▶ │  ChromaDB   │
-│ (TypeScript) │ ◀─── │  (Python)    │ ◀─── │ (vector DB) │
-└─────────────┘ SSE   └──────┬───────┘      └─────────────┘
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │   Ollama    │
-                       │ (Llama 3)   │
-                       └─────────────┘
-```
+Flask also calls out to **Ollama (Llama 3)** for generation, and streams tokens back to the React UI over SSE.
+
 
 **Flow:** Upload → parse (pdfplumber) → chunk (overlapping windows) → embed (Sentence-Transformers) → store (ChromaDB) → query → retrieve top-k chunks via cosine similarity → ground LLM response (Ollama/Llama 3) → stream tokens back to UI with source citations.
 
