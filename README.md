@@ -109,10 +109,4 @@ The tradeoff is that it isn't deployed to the cloud as a live demo — running i
 - [ ] Support for DOCX and CSV uploads
 - [ ] Retrieval evaluation metrics (precision/recall on test query sets)
 
-## License
-
-MIT
-
----
-
 **Developed by Nathan Winter**
